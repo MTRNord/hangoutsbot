@@ -2,6 +2,8 @@
 
 Hangupsbot is a chat bot designed for working with Google Hangouts.
 
+[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://github.com/MTRNord/hangoutsbot.git)
+
 Please see:
 * [Instructions for installing](https://github.com/hangoutsbot/hangoutsbot/blob/master/INSTALL.md)
 * [Issue tracker](https://github.com/hangoutsbot/hangoutsbot/issues) for bugs, issues and feature requests
