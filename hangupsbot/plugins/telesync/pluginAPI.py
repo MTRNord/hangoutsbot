@@ -11,6 +11,7 @@ class Bot(object):
     def __init__(self, bot):
         setattr(self, 'coro_send_message', bot.sendMessage)
         setattr(self, 'config', bot.ho_bot.config)
+        setattr(self, 'conversation_memory_get', bot.ho_bot.conversation_memory_get)
 
 def tg_command_register(bot, cmd, shared_func):
     global commands
