@@ -1,4 +1,4 @@
-commands = []
+commands = {}
 
 def tg_command_register(bot, cmd, shared_func):
     global commands
