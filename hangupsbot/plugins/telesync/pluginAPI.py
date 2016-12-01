@@ -10,6 +10,7 @@ class Bot(object):
     # The class "constructor" - It's actually an initializer 
     def __init__(self, bot):
         setattr(self, 'coro_send_message', bot.sendMessage)
+        setattr(self, 'config', bot.ho_bot.config)
 
 def tg_command_register(bot, cmd, shared_func):
     global commands
@@ -26,7 +27,7 @@ def tg_command_wrapper(bot, chat_id, args, cmd):
         global commands
         
         try:
-            yield from commands[cmd](bot.ho_bot, event, params)
+            yield from commands[cmd](ho_bot, event, params)
             yield from bot.sendMessage(chat_id, text, parse_mode='HTML')
         except KeyError as ke:
             yield from bot.sendMessage(chat_id, "{cmd} plugin is not active. KeyError: {e}".format(e=ke, cmd=cmd))
