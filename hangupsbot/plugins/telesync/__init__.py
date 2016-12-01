@@ -133,7 +133,7 @@ class TelegramBot(telepot.async.Bot):
                         user_id = TelegramBot.get_user_id(msg)
                         args = {'params': params, 'user_id': user_id, 'chat_type': chat_type}
                         if cmd in self.commands:
-                            yield from self.commands[cmd](self, chat_id, args)
+                            yield from self.commands[cmd](self, chat_id, args, cmd)
                         else:
                             if self.config['be_quiet']:
                                 pass
@@ -355,7 +355,7 @@ def tg_on_supergroup_upgrade(bot, msg):
 
 
 @asyncio.coroutine
-def tg_command_whoami(bot, chat_id, args):
+def tg_command_whoami(bot, chat_id, args, cmd):
     user_id = args['user_id']
     chat_type = args['chat_type']
     if 'private' == chat_type:
@@ -365,7 +365,7 @@ def tg_command_whoami(bot, chat_id, args):
 
 
 @asyncio.coroutine
-def tg_command_whereami(bot, chat_id, args):
+def tg_command_whereami(bot, chat_id, args, cmd):
     user_id = args['user_id']
     if bot.is_telegram_admin(user_id):
         yield from bot.sendMessage(chat_id, "current group's id: '{chat_id}'".format(chat_id=chat_id))
@@ -374,8 +374,7 @@ def tg_command_whereami(bot, chat_id, args):
 
 
 @asyncio.coroutine
-def tg_command_set_sync_ho(bot, chat_id, args):  # /setsyncho <hangout conv_id>
-
+def tg_command_set_sync_ho(bot, chat_id, args, cmd):  # /setsyncho <hangout conv_id>
     user_id = args['user_id']
     params = args['params']
 
@@ -406,7 +405,7 @@ def tg_command_set_sync_ho(bot, chat_id, args):  # /setsyncho <hangout conv_id>
 
 
 @asyncio.coroutine
-def tg_command_clear_sync_ho(bot, chat_id, args):
+def tg_command_clear_sync_ho(bot, chat_id, args, cmd):
     user_id = args['user_id']
     if not bot.is_telegram_admin(user_id):
         yield from bot.sendMessage(chat_id, "Only admins can do that")
@@ -427,7 +426,7 @@ def tg_command_clear_sync_ho(bot, chat_id, args):
 
 
 @asyncio.coroutine
-def tg_command_add_bot_admin(bot, chat_id, args):
+def tg_command_add_bot_admin(bot, chat_id, args, cmd):
     user_id = args['user_id']
     params = args['params']
     chat_type = args['chat_type']
@@ -458,7 +457,7 @@ def tg_command_add_bot_admin(bot, chat_id, args):
 
 
 @asyncio.coroutine
-def tg_command_remove_bot_admin(bot, chat_id, args):
+def tg_command_remove_bot_admin(bot, chat_id, args, cmd):
     user_id = args['user_id']
     params = args['params']
     chat_type = args['chat_type']
@@ -490,7 +489,7 @@ def tg_command_remove_bot_admin(bot, chat_id, args):
 
 
 @asyncio.coroutine
-def tg_command_tldr(bot, chat_id, args):
+def tg_command_tldr(bot, chat_id, args, cmd):
     params = args['params']
 
     tg2ho_dict = tg_bot.ho_bot.memory.get_by_path(['telesync'])['tg2ho']
