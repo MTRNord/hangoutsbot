@@ -1,6 +1,6 @@
 commands = []
 
-def tg_command_register(cmd, shared_func)
+def tg_command_register(bot, cmd, shared_func)
     global commands
     commands[cmd] = shared_func
     bot.call_shared("telesync.add_command", cmd, tg_command_wrapper)
