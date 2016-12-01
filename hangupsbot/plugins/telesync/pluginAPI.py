@@ -13,6 +13,7 @@ class Bot(object):
             yield from bot.sendMessage(chat_id, text, parse_mode='HTML')
         setattr(self, 'coro_send_message', sendMessage)
         setattr(self, 'config', bot.ho_bot.config)
+        setattr(self, '_client', bot.ho_bot._client)
         setattr(self, 'conversation_memory_get', bot.ho_bot.conversation_memory_get)
 
 def tg_command_register(bot, cmd, shared_func):
