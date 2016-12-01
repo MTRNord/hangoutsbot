@@ -544,6 +544,11 @@ def _initialise(bot):
         tg_bot.add_command("/addadmin", tg_command_add_bot_admin)
         tg_bot.add_command("/removeadmin", tg_command_remove_bot_admin)
         tg_bot.add_command("/tldr", tg_command_tldr)
+        
+        try:
+            bot.register_shared("telesync.add_command", tg_bot.add_command)
+        except:
+            print("error sharing!")
 
         loop = asyncio.get_event_loop()
         loop.create_task(tg_bot.message_loop())
