@@ -5,7 +5,6 @@ class Event(object):
     def __init__(self, conv_id):
         self.conv_id = conv_id
         self.conv = conv_id
-        self.conv.id_ = conv_id
         
 class Bot(object):
     # The class "constructor" - It's actually an initializer 
