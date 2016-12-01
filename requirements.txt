@@ -1,12 +1,22 @@
+# BOT DEPENDENCIES #
 git+https://github.com/hangoutsbot/hangups.git
 appdirs
 asyncio
+aiohttp>=1.0,<1.1
 jsonrpclib-pelix
-pushbullet.py
+
+# PLUGIN DEPENDENCIES #
 beautifulsoup4
-goslate
+pushbullet.py # mentions
+goslate # translations
 wikipedia
 wolframalpha
-git+https://github.com/loisaidasam/pyslack.git
+git+https://github.com/loisaidasam/pyslack.git # slack
 git+https://github.com/carpedm20/emoji
-selenium
+selenium # screenshots
+google-api-python-client # for spotify
+spotipy
+slackclient >=0.16 # slackrtm (includes websockets)
+textblob
+python_dateutil # gitlab sink
+telepot == 7.1 # telegram sync, newer versions doesn't support Python3.4.1
