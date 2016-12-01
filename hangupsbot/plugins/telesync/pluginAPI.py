@@ -9,7 +9,7 @@ class Event(object):
 class Bot(object):
     # The class "constructor" - It's actually an initializer 
     def __init__(self, bot):
-        setattr(self, 'coro_send_message', sendMessage)
+        setattr(self, 'coro_send_message', self.sendMessage)
         setattr(self, 'config', bot.ho_bot.config)
         setattr(self, 'conversation_memory_get', bot.ho_bot.conversation_memory_get)
         
