@@ -12,7 +12,7 @@ import telepot.exception
 from handlers import handler
 from commands import command
 import random
-import pluginAPI
+from .pluginAPI import tg_command_register
 
 logger = logging.getLogger(__name__)
 
