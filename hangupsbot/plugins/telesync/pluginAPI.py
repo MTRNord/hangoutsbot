@@ -2,9 +2,10 @@ commands = {}
 
 class Event(object):
     # The class "constructor" - It's actually an initializer 
-    def __init__(self, conv_id, conv):
+    def __init__(self, conv_id):
         self.conv_id = conv_id
-        self.conv = conv
+        self.conv = conv_id
+        self.conv.id_ = conv_id
         
 class Bot(object):
     # The class "constructor" - It's actually an initializer 
@@ -23,7 +24,7 @@ def tg_command_register(bot, cmd, shared_func):
 
 def tg_command_wrapper(bot, chat_id, args, cmd):
     params = args['params'][0]
-    event = Event(str(chat_id), str(chat_id))
+    event = Event(str(chat_id))
     ho_bot = Bot(bot)
     tg2ho_dict = bot.ho_bot.memory.get_by_path(['telesync'])['tg2ho']
     if str(chat_id) in tg2ho_dict:
