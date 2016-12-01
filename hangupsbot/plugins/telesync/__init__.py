@@ -12,6 +12,7 @@ import telepot.exception
 from handlers import handler
 from commands import command
 import random
+import pluginAPI
 
 logger = logging.getLogger(__name__)
 
@@ -546,6 +547,7 @@ def _initialise(bot):
         
         try:
             bot.register_shared("telesync.add_command", tg_bot.add_command)
+            bot.register_shared("telesync.API.register_command", pluginAPI.tg_command_register)
         except:
             print("error sharing!")
 
