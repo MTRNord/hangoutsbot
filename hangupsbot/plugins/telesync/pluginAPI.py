@@ -19,7 +19,7 @@ def tg_command_register(bot, cmd, shared_func):
 
 def tg_command_wrapper(bot, chat_id, args, cmd):
     params = args['params'][0]
-    event = Event(chat_id, chat_id)
+    event = Event(str(chat_id), str(chat_id))
     ho_bot = Bot(bot)
     tg2ho_dict = bot.ho_bot.memory.get_by_path(['telesync'])['tg2ho']
     if str(chat_id) in tg2ho_dict:
