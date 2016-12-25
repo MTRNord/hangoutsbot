@@ -44,14 +44,11 @@ def _initialise(bot):
             print(e)
             if e.code == 403:
                 print("Bad username or password.")
-                sys.exit(4)
             else:
                 print("Check your sever details are correct.")
-                sys.exit(2)
         except MissingSchema as e:
             print("Bad URL format.")
             print(e)
-            sys.exit(3)
 
 @command.register(admin=True)
 def matrixsync(bot, event, *args):
@@ -148,10 +145,8 @@ def _on_hangouts_message(bot, event, command=""):
             print(e)
             if e.code == 400:
                 print("Room ID/Alias in the wrong format")
-                sys.exit(11)
             else:
                 print("Couldn't find room.")
-                sys.exit(12)
         
         user_gplus = 'https://plus.google.com/u/0/{uid}/about'.format(uid=event.user_id.chat_id)
         text = '<a href="{user_gplus}">{uname}</a> <b>({gname})</b>: {text}'.format(uname=event.user.full_name,
