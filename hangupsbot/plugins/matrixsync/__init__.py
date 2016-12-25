@@ -17,7 +17,7 @@ matrix_bot = None
 
 def _initialise(bot):
     if not bot.config.exists(['matrixsync']):
-      bot.config.set_by_path(['matrixsync'], {'homeserver': "PUT_YOUR_MATRIX_SERVER_ADDRESS_HERE",
+        bot.config.set_by_path(['matrixsync'], {'homeserver': "PUT_YOUR_MATRIX_SERVER_ADDRESS_HERE",
                                               'username': "PUT_YOUR_BOT_USERNAME_HERE",
                                               'password': "PUT_YOUR_BOT_PASSWORD_HERE",
                                               'enabled': True,
@@ -27,30 +27,29 @@ def _initialise(bot):
     bot.config.save()
     
     if not bot.memory.exists(['matrixsync']):
-      bot.memory.set_by_path(['matrixsync'], {'ho2mx': {}, 'mx2ho': {}})
+        bot.memory.set_by_path(['matrixsync'], {'ho2mx': {}, 'mx2ho': {}})
 
     bot.memory.save()
 
     matrixsync_config = bot.config.get_by_path(['matrixsync'])
 
     if matrixsync_config['enabled']:
-      global matrix_bot
-      matrix_bot = MatrixClient(matrixsync_config['homeserver'])
-      
-      try:
-        matrix_bot.login_with_password(matrixsync_config['username'], matrixsync_config['password'])
-      except MatrixRequestError as e:
-        print(e)
-        if e.code == 403:
-          print("Bad username or password.")
-          sys.exit(4)
-        else:
-          print("Check your sever details are correct.")
-          sys.exit(2)
-      except MissingSchema as e:
-        print("Bad URL format.")
-        print(e)
-        sys.exit(3)
+        global matrix_bot
+        matrix_bot = MatrixClient(matrixsync_config['homeserver'])
+        try:
+            matrix_bot.login_with_password(matrixsync_config['username'], matrixsync_config['password'])
+        except MatrixRequestError as e:
+            print(e)
+            if e.code == 403:
+                print("Bad username or password.")
+                sys.exit(4)
+            else:
+                print("Check your sever details are correct.")
+                sys.exit(2)
+        except MissingSchema as e:
+            print("Bad URL format.")
+            print(e)
+            sys.exit(3)
 
 @command.register(admin=True)
 def matrixsync(bot, event, *args):
@@ -142,18 +141,15 @@ def _on_hangouts_message(bot, event, command=""):
 
     if event.conv_id in ho2mx_dict:
         try:
-          room = matrix_bot.join_room(room_id_alias)
+            room = matrix_bot.join_room(room_id_alias)
         except MatrixRequestError as e:
-          print(e)
-          if e.code == 400:
-            print("Room ID/Alias in the wrong format")
-            sys.exit(11)
-          else:
-            print("Couldn't find room.")
-            sys.exit(12)
-
-        room.add_listener(on_message)
-        matrix_bot.start_listener_thread()
+            print(e)
+            if e.code == 400:
+                print("Room ID/Alias in the wrong format")
+                sys.exit(11)
+            else:
+                print("Couldn't find room.")
+                sys.exit(12)
         
         user_gplus = 'https://plus.google.com/u/0/{uid}/about'.format(uid=event.user_id.chat_id)
         text = '<a href="{user_gplus}">{uname}</a> <b>({gname})</b>: {text}'.format(uname=event.user.full_name,
@@ -163,5 +159,5 @@ def _on_hangouts_message(bot, event, command=""):
         yield from room.send_text(text)
         
         if has_photo:
-          logger.info("plugins/matrixsync: photo url: {url}".format(url=photo_url))
-          yield from room.send_image(photo_url, photo_url.rsplit('/', 1)[-1])
+            logger.info("plugins/matrixsync: photo url: {url}".format(url=photo_url))
+            yield from room.send_image(photo_url, photo_url.rsplit('/', 1)[-1])
