@@ -44,9 +44,9 @@ def _initialise(bot):
             matrix_bot = MatrixClient(matrixsync_config['homeserver'], valid_cert_check=False)
             try:
                 matrix_bot.login_with_password(matrixsync_config['username'], matrixsync_config['password'])
-                mx2ho_dict = ho_bot.memory.get_by_path(['matrixsync'])['mx2ho']
-                for attribute, value in mx2ho_dict:
-                    room = matrix_bot.join_room(attribute)
+                ho2mx_dict = ho_bot.memory.get_by_path(['matrixsync'])['ho2mx']
+                for room_id in mx2ho_dict:
+                    room = matrix_bot.join_room(room_id)
                     room.add_listener(on_message)
                     matrix_bot.start_listener_thread()
                 
