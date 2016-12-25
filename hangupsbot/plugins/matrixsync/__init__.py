@@ -126,7 +126,7 @@ def commands(event):
                         new_memory = {'mx2ho': mx2ho_dict, 'ho2mx': ho2mx_dict}
                         ho_bot.memory.set_by_path(['matrixsync'], new_memory)
 
-                        matrix_bot.send_message(event['room_id'], "Sync target set to '{mx_conv_id}''".format(mx_conv_id=str(params)), msgtype='m.text'
+                        matrix_bot.send_message(event['room_id'], "Sync target set to '{mx_conv_id}''".format(mx_conv_id=str(params)), msgtype='m.text')
         
 def autojoin(room_id, event):
     try:
