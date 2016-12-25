@@ -45,7 +45,7 @@ def _initialise(bot):
             try:
                 matrix_bot.login_with_password(matrixsync_config['username'], matrixsync_config['password'])
                 ho2mx_dict = ho_bot.memory.get_by_path(['matrixsync'])['ho2mx']
-                for room_id in mx2ho_dict:
+                for room_id in ho2mx_dict:
                     room = matrix_bot.join_room(room_id)
                     room.add_listener(on_message)
                     matrix_bot.start_listener_thread()
