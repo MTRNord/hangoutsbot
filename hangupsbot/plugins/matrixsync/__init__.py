@@ -44,7 +44,7 @@ def _initialise(bot):
             matrix_bot = MatrixClient(matrixsync_config['homeserver'], valid_cert_check=False)
             try:
                 matrix_bot.login_with_password(matrixsync_config['username'], matrixsync_config['password'])
-                mx2ho_dict = ho_bot.ho_bot.memory.get_by_path(['matrixsync'])['mx2ho']
+                mx2ho_dict = ho_bot.memory.get_by_path(['matrixsync'])['mx2ho']
                 for attribute, value in mx2ho_dict:
                     room = matrix_bot.join_room(attribute)
                     room.add_listener(on_message)
@@ -64,7 +64,7 @@ def _initialise(bot):
 @asyncio.coroutine
 def mx_on_message(mx_chat_alias, msg, roomName, user):
     global ho_bot
-    mx2ho_dict = ho_bot.ho_bot.memory.get_by_path(['matrixsync'])['mx2ho']
+    mx2ho_dict = ho_bot.memory.get_by_path(['matrixsync'])['mx2ho']
 
     if str(mx_chat_alias) in mx2ho_dict:
         
