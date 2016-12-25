@@ -37,7 +37,7 @@ def _initialise(bot):
 
     if matrixsync_config['enabled']:
         global matrix_bot
-        if matrixsync_config['homeserver'] !== "PUT_YOUR_MATRIX_SERVER_ADDRESS_HERE":
+        if "PUT_YOUR_MATRIX_SERVER_ADDRESS_HERE" not in matrixsync_config['homeserver']:
             matrix_bot = MatrixClient(matrixsync_config['homeserver'] + "/_matrix/client/api/v1/login?)
             try:
                 matrix_bot.login_with_password(matrixsync_config['username'], matrixsync_config['password'])
