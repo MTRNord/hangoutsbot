@@ -89,7 +89,7 @@ def mx_on_message(mx_chat_alias, msg, roomName, user):
             logger.info("[MATRIXSYNC] Matrix message forwarded: {msg} to: {ho_conv_id}".format(msg=msg,
                                                                                            ho_conv_id=ho_conv_id))
 
-def on_message(event):
+def on_message(self, event):
     global matrix_bot
     if event['type'] == "m.room.member":
         if event['membership'] == "join":
@@ -106,7 +106,7 @@ def on_message(event):
     else:
         print(event['type'])
         
-def commands(event):
+def commands(self, event):
     global matrix_bot
     global ho_bot
     if event['type'] == "m.room.message":
@@ -134,7 +134,7 @@ def commands(event):
 
                         matrix_bot.send_message(event['room_id'], "Sync target set to '{mx_conv_id}''".format(mx_conv_id=str(params)), msgtype='m.text')
         
-def autojoin(room_id, event):
+def autojoin(self, room_id, event):
     try:
         room = matrix_bot.join_room(room_id)
         room.add_listener(commands)
