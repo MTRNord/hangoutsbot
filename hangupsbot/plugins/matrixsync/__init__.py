@@ -141,7 +141,7 @@ def _on_hangouts_message(bot, event, command=""):
 
     if event.conv_id in ho2mx_dict:
         try:
-            room = matrix_bot.join_room(room_id_alias)
+            room = matrix_bot.join_room(ho2mx_dict[event.conv_id])
         except MatrixRequestError as e:
             print(e)
             if e.code == 400:
