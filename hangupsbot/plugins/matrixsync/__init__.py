@@ -16,6 +16,7 @@ import random
 logger = logging.getLogger(__name__)
 
 matrix_bot = None
+ho_bot = None
 
 def _initialise(bot):
     if not bot.config.exists(['matrixsync']):
@@ -36,11 +37,15 @@ def _initialise(bot):
     matrixsync_config = bot.config.get_by_path(['matrixsync'])
 
     if matrixsync_config['enabled']:
+        global ho_bot
         global matrix_bot
+        ho_bot = bot
         if "PUT_YOUR_MATRIX_SERVER_ADDRESS_HERE" not in matrixsync_config['homeserver']:
             matrix_bot = MatrixClient(matrixsync_config['homeserver'], valid_cert_check=False)
             try:
                 matrix_bot.login_with_password(matrixsync_config['username'], matrixsync_config['password'])
+                
+                matrix_bot.add_invite_listener(autojoin)
             except MatrixRequestError as e:
                 print(e)
                 if e.code == 403:
@@ -50,7 +55,92 @@ def _initialise(bot):
             except MissingSchema as e:
                 print("Bad URL format.")
                 print(e)
+                
+@asyncio.coroutine
+def mx_on_message(mx_chat_alias, msg, roomName, user):
+    global ho_bot
+    mx2ho_dict = ho_bot.ho_bot.memory.get_by_path(['matrixsync'])['mx2ho']
 
+    if str(mx_chat_alias) in mx2ho_dict:
+        
+        if "joined" in msg:
+            text = "{text}".format(text=msg)
+
+            ho_conv_id = tg2ho_dict[str(mx_chat_alias)]
+            yield from ho_bot.coro_send_message(ho_conv_id, text)
+        
+            logger.info("[MATRIXSYNC] Matrix user {user} joined synced to: {ho_conv_id}".format(user=user,
+                                                                                           ho_conv_id=ho_conv_id))
+
+        else:
+            text = "<b>{uname}</b> <b>({gname})</b>: {text}".format(uname=user,
+                                                                    gname=roomName,
+                                                                    text=msg)
+
+            ho_conv_id = tg2ho_dict[str(mx_chat_alias)]
+            yield from ho_bot.coro_send_message(ho_conv_id, text)
+
+            logger.info("[MATRIXSYNC] Matrix message forwarded: {msg} to: {ho_conv_id}".format(msg=msg,
+                                                                                           ho_conv_id=ho_conv_id))
+
+def on_message(event):
+    global matrix_bot
+    if event['type'] == "m.room.member":
+        if event['membership'] == "join":
+            user = event['content']['displayname']
+            roomName = matrix_bot.get_room_name(event['room_id'])
+            msg = "{0} joined".format(event['content']['displayname'])
+            mx_on_message(mx_chat_alias, msg, roomName, user)
+    elif event['type'] == "m.room.message":
+        if event['content']['msgtype'] == "m.text":
+            user = event['content']['displayname']
+            roomName = matrix_bot.get_room_name(event['room_id'])
+            msg = event['content']['body']
+            mx_on_message(mx_chat_alias, msg, roomName, user)
+    else:
+        print(event['type'])
+        
+def commands(event):
+    global matrix_bot
+    global ho_bot
+    if event['type'] == "m.room.message":
+        if event['content']['msgtype'] == "m.text":
+            if event['content']['body'].startswith('/'):
+                if "hosync" in event['content']['body']:
+                    params = event['content']['body'].split('mango', 1)[1]
+                    
+                    if len(params) != 1:
+                        matrix_bot.send_message(event['room_id'], "Illegal or Missing arguments!!!", msgtype='m.text')
+                    return
+
+                    memory = ho_bot.memory.get_by_path(['matrixsync'])
+                    mx2ho_dict = memory['mx2ho']
+                    ho2mx_dict = memory['ho2mx']
+
+                    if str(event['room_id']) in mx2ho_dict:
+                        matrix_bot.send_message(event['room_id'], "Sync target '{mx_conv_id}' already set".format(mx_conv_id=str(params), msgtype='m.text')
+                    else:
+                        mx2ho_dict[str(chat_id)] = str(params)
+                        ho2mx_dict[str(params)] = str(chat_id)
+
+                        new_memory = {'mx2ho': mx2ho_dict, 'ho2mx': ho2mx_dict}
+                        ho_bot.memory.set_by_path(['matrixsync'], new_memory)
+
+                        matrix_bot.send_message(event['room_id'], "Sync target set to '{mx_conv_id}''".format(mx_conv_id=str(params), msgtype='m.text'
+        
+def autojoin(room_id, event):
+    try:
+        room = matrix_bot.join_room(room_id)
+        room.add_listener(commands)
+        client.start_listener_thread()
+        
+    except MatrixRequestError as e:
+        print(e)
+        if e.code == 400:
+            print("Room ID/Alias in the wrong format")
+        else:
+            print("Couldn't find room.")
+                
 @command.register(admin=True)
 def matrixsync(bot, event, *args):
     """
