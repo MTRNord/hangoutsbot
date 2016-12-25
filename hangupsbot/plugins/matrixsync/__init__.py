@@ -148,11 +148,11 @@ def _on_hangouts_message(bot, event, command=""):
                                                                                         user_gplus=user_gplus,
                                                                                         gname=event.conv.name,
                                                                                         text=sync_text)
-            yield from room.send_text(text)
+            room.send_text(text)
 
             if has_photo:
                 logger.info("plugins/matrixsync: photo url: {url}".format(url=photo_url))
-                yield from room.send_image(photo_url, photo_url.rsplit('/', 1)[-1])
+                room.send_image(photo_url, photo_url.rsplit('/', 1)[-1])
 
         except MatrixRequestError as e:
             print(e)
