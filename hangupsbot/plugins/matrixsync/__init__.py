@@ -6,7 +6,9 @@ import asyncio
 import hangups
 import plugins
 import aiohttp
-from matrix_client.api import MatrixHttpApi
+from matrix_client.client import MatrixClient
+from matrix_client.api import MatrixRequestError
+from requests.exceptions import MissingSchema
 from handlers import handler
 from commands import command
 import random
