@@ -44,6 +44,11 @@ def _initialise(bot):
             matrix_bot = MatrixClient(matrixsync_config['homeserver'], valid_cert_check=False)
             try:
                 matrix_bot.login_with_password(matrixsync_config['username'], matrixsync_config['password'])
+                mx2ho_dict = ho_bot.ho_bot.memory.get_by_path(['matrixsync'])['mx2ho']
+                for attribute, value in mx2ho_dict:
+                    room = matrix_bot.join_room(attribute)
+                    room.add_listener(on_message)
+                    matrix_bot.start_listener_thread()
                 
                 matrix_bot.add_invite_listener(autojoin)
             except MatrixRequestError as e:
@@ -66,7 +71,7 @@ def mx_on_message(mx_chat_alias, msg, roomName, user):
         if "joined" in msg:
             text = "{text}".format(text=msg)
 
-            ho_conv_id = tg2ho_dict[str(mx_chat_alias)]
+            ho_conv_id = mx2ho_dict[str(mx_chat_alias)]
             yield from ho_bot.coro_send_message(ho_conv_id, text)
         
             logger.info("[MATRIXSYNC] Matrix user {user} joined synced to: {ho_conv_id}".format(user=user,
@@ -132,7 +137,7 @@ def autojoin(room_id, event):
     try:
         room = matrix_bot.join_room(room_id)
         room.add_listener(commands)
-        client.start_listener_thread()
+        matrix_bot.start_listener_thread()
         
     except MatrixRequestError as e:
         print(e)
