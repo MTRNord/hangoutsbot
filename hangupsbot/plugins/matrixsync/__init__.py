@@ -37,18 +37,19 @@ def _initialise(bot):
 
     if matrixsync_config['enabled']:
         global matrix_bot
-        matrix_bot = MatrixClient(matrixsync_config['homeserver'])
-        try:
-            matrix_bot.login_with_password(matrixsync_config['username'], matrixsync_config['password'])
-        except MatrixRequestError as e:
-            print(e)
-            if e.code == 403:
-                print("Bad username or password.")
-            else:
-                print("Check your sever details are correct.")
-        except MissingSchema as e:
-            print("Bad URL format.")
-            print(e)
+        if matrixsync_config['homeserver'] !== "PUT_YOUR_MATRIX_SERVER_ADDRESS_HERE":
+            matrix_bot = MatrixClient(matrixsync_config['homeserver'] + "/_matrix/client/api/v1/login?)
+            try:
+                matrix_bot.login_with_password(matrixsync_config['username'], matrixsync_config['password'])
+            except MatrixRequestError as e:
+                print(e)
+                if e.code == 403:
+                    print("Bad username or password.")
+                else:
+                    print("Check your sever details are correct.")
+            except MissingSchema as e:
+                print("Bad URL format.")
+                print(e)
 
 @command.register(admin=True)
 def matrixsync(bot, event, *args):
