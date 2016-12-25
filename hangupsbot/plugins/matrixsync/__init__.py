@@ -144,10 +144,8 @@ def _on_hangouts_message(bot, event, command=""):
             room = matrix_bot.join_room(ho2mx_dict[event.conv_id])
 
             user_gplus = 'https://plus.google.com/u/0/{uid}/about'.format(uid=event.user_id.chat_id)
-            text = '<a href="{user_gplus}">{uname}</a> <b>({gname})</b>: {text}'.format(uname=event.user.full_name,
-                                                                                        user_gplus=user_gplus,
-                                                                                        gname=event.conv.name,
-                                                                                        text=sync_text)
+            text = '"{uname}": {text}'.format(uname=event.user.full_name,
+                                              text=sync_text)
             room.send_text(text)
 
             if has_photo:
