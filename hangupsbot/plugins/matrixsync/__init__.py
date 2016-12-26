@@ -19,9 +19,52 @@ logger = logging.getLogger(__name__)
 matrix_bot = None
 ho_bot = None
 matrixsync_config = None
-matrixsync_token = None
 
-@asyncio.coroutine
+def _initialise(bot):
+    if not bot.config.exists(['matrixsync']):
+        bot.config.set_by_path(['matrixsync'], {'homeserver': "PUT_YOUR_MATRIX_SERVER_ADDRESS_HERE",
+                                              'username': "PUT_YOUR_BOT_USERNAME_HERE",
+                                              'password': "PUT_YOUR_BOT_PASSWORD_HERE",
+                                              'enabled': True,
+                                              'admins': [],
+                                              'be_quiet': False})
+
+    bot.config.save()
+    
+    if not bot.memory.exists(['matrixsync']):
+        bot.memory.set_by_path(['matrixsync'], {'ho2mx': {}, 'mx2ho': {}})
+
+    bot.memory.save()
+    global matrixsync_config
+    matrixsync_config = bot.config.get_by_path(['matrixsync'])
+
+    if matrixsync_config['enabled']:
+        global ho_bot
+        global matrix_bot
+        ho_bot = bot
+        if "PUT_YOUR_MATRIX_SERVER_ADDRESS_HERE" not in matrixsync_config['homeserver']:
+            matrix_bot = MatrixClient(matrixsync_config['homeserver'], valid_cert_check=False)
+            try:
+                matrix_bot.login_with_password(matrixsync_config['username'], matrixsync_config['password'])
+                mx2ho_dict = ho_bot.memory.get_by_path(['matrixsync'])['mx2ho']
+                for room_id in mx2ho_dict:
+                    
+                    room = matrix_bot.join_room(room_id)
+                    room.add_listener(on_message)
+                    matrix_bot.start_listener_thread()
+                
+                matrix_bot.add_invite_listener(autojoin)
+            except MatrixRequestError as e:
+                print(e)
+                if e.code == 403:
+                    print("Bad username or password.")
+                else:
+                    print("Check your sever details are correct.")
+            except MissingSchema as e:
+                print("Bad URL format.")
+                print(e)
+        
+
 def mx_on_message(mx_chat_alias, msg, roomName, user):
     global ho_bot
     mx2ho_dict = ho_bot.memory.get_by_path(['matrixsync'])['mx2ho']
@@ -51,8 +94,7 @@ def mx_on_message(mx_chat_alias, msg, roomName, user):
 def on_message(self, event):
     global matrix_bot
     global matrixsync_config
-    global matrix_token
-    matrix_raw = MatrixHttpApi(matrixsync_config['homeserver'], token=matrix_token)
+    matrix_raw = matrix_bot.api
     if event['type'] == "m.room.member":
         if event['membership'] == "join":
             user_obj = matrix_bot.get_user(event['sender'])
@@ -70,50 +112,6 @@ def on_message(self, event):
     else:
         print(event['type'])
 
-def _initialise(bot):
-    if not bot.config.exists(['matrixsync']):
-        bot.config.set_by_path(['matrixsync'], {'homeserver': "PUT_YOUR_MATRIX_SERVER_ADDRESS_HERE",
-                                              'username': "PUT_YOUR_BOT_USERNAME_HERE",
-                                              'password': "PUT_YOUR_BOT_PASSWORD_HERE",
-                                              'enabled': True,
-                                              'admins': [],
-                                              'be_quiet': False})
-
-    bot.config.save()
-    
-    if not bot.memory.exists(['matrixsync']):
-        bot.memory.set_by_path(['matrixsync'], {'ho2mx': {}, 'mx2ho': {}})
-
-    bot.memory.save()
-    global matrixsync_config
-    matrixsync_config = bot.config.get_by_path(['matrixsync'])
-
-    if matrixsync_config['enabled']:
-        global ho_bot
-        global matrix_bot
-        global matrix_token
-        ho_bot = bot
-        if "PUT_YOUR_MATRIX_SERVER_ADDRESS_HERE" not in matrixsync_config['homeserver']:
-            matrix_bot = MatrixClient(matrixsync_config['homeserver'], valid_cert_check=False)
-            try:
-                matrix_token = matrix_bot.login_with_password(matrixsync_config['username'], matrixsync_config['password'])
-                mx2ho_dict = ho_bot.memory.get_by_path(['matrixsync'])['mx2ho']
-                for room_id in mx2ho_dict:
-                    
-                    room = matrix_bot.join_room(room_id)
-                    room.add_listener(on_message)
-                    matrix_bot.start_listener_thread()
-                
-                matrix_bot.add_invite_listener(autojoin)
-            except MatrixRequestError as e:
-                print(e)
-                if e.code == 403:
-                    print("Bad username or password.")
-                else:
-                    print("Check your sever details are correct.")
-            except MissingSchema as e:
-                print("Bad URL format.")
-                print(e)
         
 def commands(self, event):
     global matrix_bot
