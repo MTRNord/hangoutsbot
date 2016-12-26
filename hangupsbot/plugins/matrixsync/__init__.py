@@ -17,7 +17,7 @@ import random
 logger = logging.getLogger(__name__)
 
 matrix_bot = None
-ho_bot = None
+ho_bot = None<
 matrixsync_config = None
 
 def _initialise(bot):
@@ -99,14 +99,14 @@ def on_message(self, event):
         if event['membership'] == "join":
             user_obj = matrix_bot.get_user(event['sender'])
             user = user_obj.get_display_name()
-            roomName = matrix_raw.get_room_name(event['room_id'])
+            roomName = matrix_raw.get_room_name(self.room_id)
             msg = "{0} joined".format(user)
             mx_on_message(mx_chat_alias, msg, roomName, user)
     elif event['type'] == "m.room.message":
         if event['content']['msgtype'] == "m.text":
             user_obj = matrix_bot.get_user(event['sender'])
             user = user_obj.get_display_name()
-            roomName = matrix_raw.get_room_name(event['room_id'])
+            roomName = matrix_raw.get_room_name(self.room_id)
             msg = event['content']['body']
             mx_on_message(mx_chat_alias, msg, roomName, user)
     else:
@@ -122,15 +122,15 @@ def commands(self, event):
                     params = event['content']['body'].split('mango', 1)[1]
                     
                     if len(params) != 1:
-                        matrix_bot.send_message(event['room_id'], "Illegal or Missing arguments!!!", msgtype='m.text')
+                        matrix_bot.send_message(self.room_id, "Illegal or Missing arguments!!!", msgtype='m.text')
                         return
 
                     memory = ho_bot.memory.get_by_path(['matrixsync'])
                     mx2ho_dict = memory['mx2ho']
                     ho2mx_dict = memory['ho2mx']
 
-                    if str(event['room_id']) in mx2ho_dict:
-                        matrix_bot.send_message(event['room_id'], "Sync target '{mx_conv_id}' already set".format(mx_conv_id=str(params)), msgtype='m.text')
+                    if str(self.room_id) in mx2ho_dict:
+                        matrix_bot.send_message(self.room_id, "Sync target '{mx_conv_id}' already set".format(mx_conv_id=str(params)), msgtype='m.text')
                     else:
                         mx2ho_dict[str(chat_id)] = str(params)
                         ho2mx_dict[str(params)] = str(chat_id)
@@ -138,7 +138,7 @@ def commands(self, event):
                         new_memory = {'mx2ho': mx2ho_dict, 'ho2mx': ho2mx_dict}
                         ho_bot.memory.set_by_path(['matrixsync'], new_memory)
 
-                        matrix_bot.send_message(event['room_id'], "Sync target set to '{mx_conv_id}''".format(mx_conv_id=str(params)), msgtype='m.text')
+                        matrix_bot.send_message(self.room_id, "Sync target set to '{mx_conv_id}''".format(mx_conv_id=str(params)), msgtype='m.text')
         
 def autojoin(self, room_id, event):
     try:
