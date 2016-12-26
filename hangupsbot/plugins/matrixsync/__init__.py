@@ -17,7 +17,7 @@ import random
 logger = logging.getLogger(__name__)
 
 matrix_bot = None
-ho_bot = None<
+ho_bot = None
 matrixsync_config = None
 
 def _initialise(bot):
