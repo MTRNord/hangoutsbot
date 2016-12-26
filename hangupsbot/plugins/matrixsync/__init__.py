@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 matrix_bot = None
 ho_bot = None
 matrixsync_config = None
+matrixsync_token = None
 
 def _initialise(bot):
     if not bot.config.exists(['matrixsync']):
@@ -41,11 +42,12 @@ def _initialise(bot):
     if matrixsync_config['enabled']:
         global ho_bot
         global matrix_bot
+        global matrix_token
         ho_bot = bot
         if "PUT_YOUR_MATRIX_SERVER_ADDRESS_HERE" not in matrixsync_config['homeserver']:
             matrix_bot = MatrixClient(matrixsync_config['homeserver'], valid_cert_check=False)
             try:
-                matrix_bot.login_with_password(matrixsync_config['username'], matrixsync_config['password'])
+                matrix_token = matrix_bot.login_with_password(matrixsync_config['username'], matrixsync_config['password'])
                 mx2ho_dict = ho_bot.memory.get_by_path(['matrixsync'])['mx2ho']
                 for room_id in mx2ho_dict:
                     
@@ -94,7 +96,8 @@ def mx_on_message(mx_chat_alias, msg, roomName, user):
 def on_message(self, event):
     global matrix_bot
     global matrixsync_config
-    matrix_raw = MatrixHttpApi(matrixsync_config['homeserver'])
+    global matrix_token
+    matrix_raw = MatrixHttpApi(matrixsync_config['homeserver'], token=matrix_token)
     if event['type'] == "m.room.member":
         if event['membership'] == "join":
             user_obj = matrix_bot.get_user(event['sender'])
