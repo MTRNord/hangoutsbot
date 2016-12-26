@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 matrix_bot = None
 ho_bot = None
 matrixsync_config = None
+loop = None
 
 def _initialise(bot):
     if not bot.config.exists(['matrixsync']):
@@ -41,7 +42,10 @@ def _initialise(bot):
     if matrixsync_config['enabled']:
         global ho_bot
         global matrix_bot
+        global loop
+        loop = asyncio.get_event_loop()
         ho_bot = bot
+        ho_bot.logger = logger
         if "PUT_YOUR_MATRIX_SERVER_ADDRESS_HERE" not in matrixsync_config['homeserver']:
             matrix_bot = MatrixClient(matrixsync_config['homeserver'], valid_cert_check=False)
             try:
@@ -63,51 +67,53 @@ def _initialise(bot):
             except MissingSchema as e:
                 print("Bad URL format.")
                 print(e)
-        
-@asyncio.coroutine
-def mx_on_message(mx_chat_alias, msg, roomName, user):
+
+
+def mx_on_message(mx_chat_alias, msg, roomName, user, ho_bot, loop):
     mx2ho_dict = ho_bot.memory.get_by_path(['matrixsync'])['mx2ho']
-
-    if str(mx_chat_alias) in mx2ho_dict:
-        
-        if "joined" in msg:
-            text = "{text}".format(text=msg)
-
-            ho_conv_id = mx2ho_dict[str(mx_chat_alias)]
-            yield from ho_bot.coro_send_message(ho_conv_id, text)
-        
-            logger.info("[MATRIXSYNC] Matrix user {user} joined synced to: {ho_conv_id}".format(user=user,
-                                                                                           ho_conv_id=ho_conv_id))
-
+    asyncio.set_event_loop(loop)
+    local_loop = asyncio.get_event_loop()
+    if mx_chat_alias in mx2ho_dict:
+        x = "joined"
+        if x in msg:
+            text = msg
+            ho_conv_id = mx2ho_dict[mx_chat_alias]
+            asyncio.async(ho_bot.coro_send_message(ho_conv_id, text))
+            ho_bot.logger.info("[MATRIXSYNC] Matrix user {user} joined synced to: {ho_conv_id}".format(user=user,
+                                                                                                       ho_conv_id=ho_conv_id))
         else:
             text = "<b>{uname}</b> <b>({gname})</b>: {text}".format(uname=user,
                                                                     gname=roomName,
                                                                     text=msg)
-
-            ho_conv_id = tg2ho_dict[str(mx_chat_alias)]
-            yield from ho_bot.coro_send_message(ho_conv_id, text)
-
-            logger.info("[MATRIXSYNC] Matrix message forwarded: {msg} to: {ho_conv_id}".format(msg=msg,
-                                                                                           ho_conv_id=ho_conv_id))
+            ho_conv_id = mx2ho_dict[mx_chat_alias]
+            asyncio.async(ho_bot.coro_send_message(ho_conv_id, text))
+            ho_bot.logger.info("[MATRIXSYNC] Matrix message forwarded: {msg} to: {ho_conv_id}".format(msg=msg,
+                                                                                                      ho_conv_id=ho_conv_id))
+    else:
+        ho_bot.logger.info("wrong")
 
 def on_message(self, event):
+    global ho_bot
+    global loop
+    asyncio.set_event_loop(loop)
+    local_loop = asyncio.get_event_loop()
     matrix_raw = matrix_bot.api
     if event['type'] == "m.room.member":
         if event['membership'] == "join":
             user_obj = matrix_bot.get_user(event['sender'])
             user = user_obj.get_display_name()
             roomName = matrix_raw.get_room_name(self.room_id)['name']
-            msg = "{0} joined".format(user)
-            message = mx_on_message(self.room_id, msg, roomName, user)
+            msg = "{} joined".format(user)
+            mx_on_message(self.room_id, msg, roomName, user, ho_bot, local_loop)
     elif event['type'] == "m.room.message":
         if event['content']['msgtype'] == "m.text":
             user_obj = matrix_bot.get_user(event['sender'])
             user = user_obj.get_display_name()
             roomName = matrix_raw.get_room_name(self.room_id)['name']
             msg = event['content']['body']
-            message = mx_on_message(self.room_id, msg, roomName, user)
+            mx_on_message(self.room_id, msg, roomName, user, ho_bot, local_loop)
     else:
-        print(event['type'])
+        ho_bot.logger.info(event['type'])
 
         
 def commands(self, event):
@@ -238,6 +244,8 @@ def _on_hangouts_message(bot, event, command=""):
         sync_text = "(shared an image)"
 
     ho2mx_dict = bot.memory.get_by_path(['matrixsync'])['ho2mx']
+
+    print(event.conv_id)
 
     if event.conv_id in ho2mx_dict:
         try:
