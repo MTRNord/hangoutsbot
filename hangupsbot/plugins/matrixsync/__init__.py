@@ -246,21 +246,11 @@ def _on_hangouts_message(bot, event, command=""):
     ho2mx_dict = bot.memory.get_by_path(['matrixsync'])['ho2mx']
 
     if event.conv_id in ho2mx_dict:
-        try:
-            room = matrix_bot.join_room(ho2mx_dict[event.conv_id])
+        user_gplus = 'https://plus.google.com/u/0/{uid}/about'.format(uid=event.user_id.chat_id)
+        text_plain = '{uname}: {text}'.format(uname=event.user.full_name, text=sync_text)
+        text_html = '<a href="{user_gplus}">{uname}</a> <b>({gname})</b>: {text}'.format(uname=event.user.full_name, text=sync_text, user_gplus=user_gplus, gname=event.conv.name)
+        matrix_bot.api.send_message_event(ho2mx_dict[event.conv_id], "m.room.message", {"msgtype": "m.text", "body": text_plain, "formatted_body": text_html,  "format": "org.matrix.custom.html"})
 
-            user_gplus = 'https://plus.google.com/u/0/{uid}/about'.format(uid=event.user_id.chat_id)
-            text_plain = '{uname}: {text}'.format(uname=event.user.full_name, text=sync_text)
-            text_html = '<a href="{user_gplus}">{uname}</a> <b>({gname})</b>: {text}'.format(uname=event.user.full_name, text=sync_text, user_gplus=user_gplus, gname=event.conv.name)
-            matrix_bot.api.send_message_event(ho2mx_dict[event.conv_id], "m.room.message", {"msgtype": "m.text", "body": text_plain, "formatted_body": text_html,  "format": "org.matrix.custom.html"})
-
-            if has_photo:
-                logger.info("plugins/matrixsync: photo url: {url}".format(url=photo_url))
-                room.send_image(photo_url, photo_url.rsplit('/', 1)[-1])
-
-        except MatrixRequestError as e:
-            print(e)
-            if e.code == 400:
-                print("Room ID/Alias in the wrong format")
-            else:
-                print("Couldn't find room.")
+        if has_photo:
+            logger.info("plugins/matrixsync: photo url: {url}".format(url=photo_url))
+            matrix_bot.api.send_content(ho2mx_dict[event.conv_id], photo_url, photo_url.rsplit('/', 1)[-1], "m.image", None)
