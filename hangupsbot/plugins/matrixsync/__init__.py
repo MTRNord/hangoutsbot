@@ -8,6 +8,7 @@ import plugins
 import aiohttp
 from matrix_client.client import MatrixClient
 from matrix_client.api import MatrixRequestError
+from matrix_client.api import MatrixHttpApi
 from requests.exceptions import MissingSchema
 from handlers import handler
 from commands import command
@@ -114,7 +115,6 @@ def on_message(self, event):
 def commands(self, event):
     global matrix_bot
     global ho_bot
-    if event['type'] == "m.room.message":
         if event['content']['msgtype'] == "m.text":
             if event['content']['body'].startswith('/'):
                 if "hosync" in event['content']['body']:
