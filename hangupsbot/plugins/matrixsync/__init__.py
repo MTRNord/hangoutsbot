@@ -104,14 +104,14 @@ def on_message(self, event):
             user = user_obj.get_display_name()
             roomName = matrix_raw.get_room_name(self.room_id)
             msg = "{0} joined".format(user)
-            mx_on_message(mx_chat_alias, msg, roomName, user)
+            mx_on_message(self.room_id, msg, roomName, user)
     elif event['type'] == "m.room.message":
         if event['content']['msgtype'] == "m.text":
             user_obj = matrix_bot.get_user(event['sender'])
             user = user_obj.get_display_name()
             roomName = matrix_raw.get_room_name(self.room_id)
             msg = event['content']['body']
-            mx_on_message(mx_chat_alias, msg, roomName, user)
+            mx_on_message(self.room_id, msg, roomName, user)
     else:
         print(event['type'])
         
