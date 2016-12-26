@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 matrix_bot = None
 ho_bot = None
+matrixsync_config = None
 
 def _initialise(bot):
     if not bot.config.exists(['matrixsync']):
@@ -33,7 +34,7 @@ def _initialise(bot):
         bot.memory.set_by_path(['matrixsync'], {'ho2mx': {}, 'mx2ho': {}})
 
     bot.memory.save()
-
+    global matrixsync_config
     matrixsync_config = bot.config.get_by_path(['matrixsync'])
 
     if matrixsync_config['enabled']:
@@ -91,18 +92,20 @@ def mx_on_message(mx_chat_alias, msg, roomName, user):
 
 def on_message(self, event):
     global matrix_bot
+    global matrixsync_config
+    matrix_raw = MatrixHttpApi(matrixsync_config['homeserver'])
     if event['type'] == "m.room.member":
         if event['membership'] == "join":
             user_obj = matrix_bot.get_user(event['sender'])
             user = user_obj.get_display_name()
-            roomName = matrix_bot.get_room_name(event['room_id'])
+            roomName = matrix_raw.get_room_name(event['room_id'])
             msg = "{0} joined".format(user)
             mx_on_message(mx_chat_alias, msg, roomName, user)
     elif event['type'] == "m.room.message":
         if event['content']['msgtype'] == "m.text":
             user_obj = matrix_bot.get_user(event['sender'])
             user = user_obj.get_display_name()
-            roomName = matrix_bot.get_room_name(event['room_id'])
+            roomName = matrix_raw.get_room_name(event['room_id'])
             msg = event['content']['body']
             mx_on_message(mx_chat_alias, msg, roomName, user)
     else:
