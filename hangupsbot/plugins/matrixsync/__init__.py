@@ -64,9 +64,8 @@ def _initialise(bot):
                 print("Bad URL format.")
                 print(e)
         
-
+@asyncio.coroutine
 def mx_on_message(mx_chat_alias, msg, roomName, user):
-    global ho_bot
     mx2ho_dict = ho_bot.memory.get_by_path(['matrixsync'])['mx2ho']
 
     if str(mx_chat_alias) in mx2ho_dict:
@@ -92,8 +91,6 @@ def mx_on_message(mx_chat_alias, msg, roomName, user):
                                                                                            ho_conv_id=ho_conv_id))
 
 def on_message(self, event):
-    global matrix_bot
-    global matrixsync_config
     matrix_raw = matrix_bot.api
     if event['type'] == "m.room.member":
         if event['membership'] == "join":
@@ -101,14 +98,14 @@ def on_message(self, event):
             user = user_obj.get_display_name()
             roomName = matrix_raw.get_room_name(self.room_id)
             msg = "{0} joined".format(user)
-            mx_on_message(self.room_id, msg, roomName, user)
+            message = mx_on_message(self.room_id, msg, roomName, user)
     elif event['type'] == "m.room.message":
         if event['content']['msgtype'] == "m.text":
             user_obj = matrix_bot.get_user(event['sender'])
             user = user_obj.get_display_name()
             roomName = matrix_raw.get_room_name(self.room_id)
             msg = event['content']['body']
-            mx_on_message(self.room_id, msg, roomName, user)
+            message = mx_on_message(self.room_id, msg, roomName, user)
     else:
         print(event['type'])
 
